@@ -1,8 +1,8 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { nextAuthOptions } from "../api/auth/[...nextauth]/route";
-import SideBar from "@/components/sideBar/SideBar";
-import { TopBar } from "@/components/topBar/TopBar";
+import SideBar from "@/components/sideBar/side-bar";
+import { TopBar } from "@/components/topBar/top-bar";
 
 export default async function DashboardLayout({
   children,
@@ -11,7 +11,7 @@ export default async function DashboardLayout({
   if (!session) {
     redirect("/login");
   }
-
+  
   return (
     <div className="flex flex-1 overflow-hidden">
       <SideBar />

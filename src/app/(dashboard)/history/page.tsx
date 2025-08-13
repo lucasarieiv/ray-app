@@ -1,10 +1,10 @@
 "use client";
-import { History } from "@/types/history";
+import { History as IHistory } from "@/types/history";
 import { HistoryIcon, Luggage } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export default function Page() {
-  const [history, setHistory] = useState<History[]>([]);
+export default function History() {
+  const [history, setHistory] = useState<IHistory[]>([]);
   async function getCalculations() {
     const response = await fetch("api/history", {
       method: "GET",

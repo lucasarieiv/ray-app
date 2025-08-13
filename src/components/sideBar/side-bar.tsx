@@ -2,7 +2,7 @@
 import { Calculator, LayoutList, LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import NavItem from "./NavItem";
+import NavItem from "./nav-item";
 import { signOut } from "next-auth/react";
 
 export default function SideBar() {

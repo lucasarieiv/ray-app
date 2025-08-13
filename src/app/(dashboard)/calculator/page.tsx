@@ -1,21 +1,20 @@
 "use client";
-import { Badge } from "@/components/badge/Badge";
+import { Badge } from "@/components/badge/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CalculeResponse } from "@/types/api";
 import {
   Bed,
-  Calculator,
+  CalculatorIcon,
   Fuel,
   Hamburger,
   PlusIcon,
   Receipt,
   Wallet,
-  X,
 } from "lucide-react";
 import { useState } from "react";
 
-export default function CalculatorPage() {
+export default function Calculator() {
   const [data, setData] = useState({
     distance: 0,
     consume: 0,
@@ -146,7 +145,7 @@ export default function CalculatorPage() {
   return (
     <div>
       <div className="flex gap-4 items-center mb-8">
-        <Calculator size={32} color="#2563eb" />
+        <CalculatorIcon size={32} color="#2563eb" />
         <h1 className="text-4xl font-semibold text-[#2563eb]">Calculadora</h1>
       </div>
       <div className="my-8">

@@ -21,7 +21,7 @@ const RegisterSchema = z
     path: ["confirmPassword"],
   });
 
-export function RegisterForm() {
+export function SignUpForm() {
   const [userData, setUserData] = useState({
     email: "",
     name: "",
