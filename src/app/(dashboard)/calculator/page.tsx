@@ -1,149 +1,64 @@
 "use client";
-import { Badge } from "@/components/badge/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CalculeResponse } from "@/types/api";
+import {
+  NewCalculatorSchema,
+  newCalculatorSchema,
+} from "@/validators/calculator-validators";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Bed,
   CalculatorIcon,
   Fuel,
   Hamburger,
-  PlusIcon,
   Receipt,
   Wallet,
 } from "lucide-react";
 import { useState } from "react";
+import { CurrencyInput } from "react-currency-mask";
+import { Controller, useForm } from "react-hook-form";
 
 export default function Calculator() {
-  const [data, setData] = useState({
-    distance: 0,
-    consume: 0,
-    price: formatToBRL("0"),
+  const { handleSubmit, control, formState, register, getValues } = useForm({
+    resolver: zodResolver(newCalculatorSchema),
   });
-  const [toll, setToll] = useState<number[]>([]);
-  const [tollValue, setTollValue] = useState(formatToBRL("0"));
-  const [hostingValue, setHostingValue] = useState(formatToBRL("0"));
-  const [hostings, setHostings] = useState<number[]>([]);
-  const [foodValue, setFoodValue] = useState(formatToBRL("0"));
-  const [foods, setFoods] = useState<number[]>([]);
   const [totalData, setTotalData] = useState<CalculeResponse>({
     getFuelExpensesCalcule: 0,
     getExpensesCalcule: 0,
     getTotalExpesesCalcule: 0,
   });
+  console.log(getValues());
 
-  const totalToll = Number.parseFloat(
-    toll
-      .reduce((prev, acc) => {
-        return (prev += acc);
-      }, 0)
-      .toFixed(2)
-  );
+  function formatToBRL(value: number) {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  }
 
-  const totalHostings = Number.parseFloat(
-    hostings
-      .reduce((prev, acc) => {
-        return (prev += acc);
-      }, 0)
-      .toFixed(2)
-  );
-
-  const totalFoods = Number.parseFloat(
-    foods
-      .reduce((prev, acc) => {
-        return (prev += acc);
-      }, 0)
-      .toFixed(2)
-  );
-
-  async function calculate() {
-    const response = await fetch("api/calculate", {
+  async function handleApiCall(url: string, data: NewCalculatorSchema) {
+    const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...data,
-        price: Number.parseFloat(formatToNumber(data.price).toFixed(2)),
-        toll: totalToll,
-        hostings: totalHostings,
-        foods: totalFoods,
-      }),
+      body: JSON.stringify(data),
     });
     const responseData: CalculeResponse = await response.json();
-    if (response.status == 200) {
+    if (response.status == 200 || response.status == 201) {
       setTotalData(responseData);
     }
   }
 
-  async function handleSaveCalcule() {
-    const response = await fetch("api/history", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...data,
-        price: Number.parseFloat(formatToNumber(data.price).toFixed(2)),
-        toll: totalToll,
-        hostings: totalHostings,
-        foods: totalFoods,
-      }),
-    });
+  async function handleCalcule(data: NewCalculatorSchema) {
+    await handleApiCall("/api/calculate", data);
   }
 
-  function formatToNumber(value: string) {
-    const formattedAmount = value
-      .replace("/\\s/g", "")
-      .replace("R$", "")
-      .replace("/\\./g", "")
-      .replace(",", ".");
-    return Number(formattedAmount);
-  }
-
-  function formatToBRL(value: string | number) {
-    const digits = value.replace(/\D/g, "");
-    const number = Number(digits) / 100;
-    return number.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  }
-
-  function handleAddToll() {
-    const valueNumber = formatToNumber(tollValue);
-    setToll([...toll, Number(valueNumber)]);
-    setTollValue(formatToBRL("0"));
-  }
-
-  function handleDeleteToll(idxRemove: number) {
-    const newToll = [...toll];
-    newToll.splice(idxRemove, 1);
-    setToll(newToll);
-  }
-
-  function handleAddHosting() {
-    const valueNumber = formatToNumber(hostingValue);
-    setHostings([...hostings, valueNumber]);
-    setHostingValue(formatToBRL("0"));
-  }
-
-  function handleDeleteHosting(idxRemove: number) {
-    const newHostings = [...hostings];
-    newHostings.splice(idxRemove, 1);
-    setHostings(newHostings);
-  }
-
-  function handleAddFoodExpense() {
-    const valueNumber = formatToNumber(foodValue);
-    setFoods([...foods, valueNumber]);
-    setFoodValue(formatToBRL("0"));
-  }
-
-  function handleDeleteFoodExpense(idxRemove: number) {
-    const newFoods = [...hostings];
-    newFoods.splice(idxRemove, 1);
-    setFoods(newFoods);
+  async function handleSaveHistory(data: NewCalculatorSchema) {
+    await handleApiCall("api/history", data);
   }
 
   return (
-    <div>
+    <form onSubmit={handleSubmit(handleSaveHistory)}>
       <div className="flex gap-4 items-center mb-8">
         <CalculatorIcon size={32} color="#2563eb" />
         <h1 className="text-4xl font-semibold text-[#2563eb]">Calculadora</h1>
@@ -156,54 +71,88 @@ export default function Calculator() {
         <div className="flex justify-between gap-8">
           <div className="flex flex-col w-full">
             <div>
-              <label htmlFor="">Distância</label>
+              <label htmlFor="distance">Distância</label>
             </div>
-            <div className="flex">
-              <Input
-                className="rounded-bl-md rounded-tl-md"
-                type="text"
-                onChange={(e) =>
-                  setData({ ...data, distance: Number(e.target.value) })
-                }
-              />
-              <div className="flex items-center px-6 justify-center bg-[#2563eb] h-14 border-input rounded-br-md rounded-tr-md">
-                <p className="font-semibold text-white text-lg">km</p>
+            <div className="flex flex-col gap-0.5">
+              <div className="flex">
+                <Input
+                  {...register("distance")}
+                  name="distance"
+                  className="rounded-bl-md rounded-tl-md"
+                  type="text"
+                />
+                <div className="flex items-center px-6 justify-center bg-[#2563eb] h-14 border-input rounded-br-md rounded-tr-md">
+                  <p className="font-semibold text-white text-lg">km</p>
+                </div>
               </div>
+              {formState.errors.distance && (
+                <p className="text-red-500 ml-2">
+                  {formState.errors.distance.message}
+                </p>
+              )}
             </div>
           </div>
           <div className="flex flex-col w-full">
             <div>
               <label htmlFor="">Consumo médio do veículo</label>
             </div>
-            <div className="flex">
-              <Input
-                className="rounded-bl-md rounded-tl-md"
-                type="text"
-                onChange={(e) =>
-                  setData({ ...data, consume: Number(e.target.value) })
-                }
-              />
-              <div className="flex items-center px-6 justify-center bg-[#2563eb] h-14 border-input rounded-br-md rounded-tr-md">
-                <p className="w-12 font-semibold text-white text-lg">km / l</p>
+            <div className="flex flex-col gap-0 5">
+              <div className="flex">
+                <Input
+                  {...register("consumption")}
+                  className="rounded-bl-md rounded-tl-md"
+                  type="text"
+                />
+                <div className="flex items-center px-6 justify-center bg-[#2563eb] h-14 border-input rounded-br-md rounded-tr-md">
+                  <p className="w-12 font-semibold text-white text-lg">
+                    km / l
+                  </p>
+                </div>
               </div>
+              {formState.errors.consumption && (
+                <p className="text-red-500 ml-2">
+                  {formState.errors.consumption.message}
+                </p>
+              )}
             </div>
           </div>
           <div className="flex flex-col w-full">
             <div>
               <label htmlFor="">Preço por litro</label>
             </div>
-            <div className="flex">
-              <Input
-                value={data.price}
-                className="rounded-bl-md rounded-tl-md"
-                type="text"
-                onChange={(e) =>
-                  setData({ ...data, price: formatToBRL(e.target.value) })
-                }
-              />
-              <div className="flex items-center px-6 justify-center bg-[#2563eb] h-14 border-input rounded-br-md rounded-tr-md">
-                <p className="w-12 font-semibold text-white text-lg">por l</p>
+            <div className="flex flex-col gap-0 5">
+              <div className="flex">
+                <Controller
+                  name="price"
+                  control={control}
+                  defaultValue={0}
+                  render={({ field }) => {
+                    return (
+                      <CurrencyInput
+                        value={field.value}
+                        defaultValue={0}
+                        onChangeValue={(_, value) => {
+                          field.onChange(value);
+                        }}
+                        InputElement={
+                          <Input
+                            className="rounded-bl-md rounded-tl-md"
+                            type="text"
+                          />
+                        }
+                      />
+                    );
+                  }}
+                />
+                <div className="flex items-center px-6 justify-center bg-[#2563eb] h-14 border-input rounded-br-md rounded-tr-md">
+                  <p className="w-12 font-semibold text-white text-lg">por l</p>
+                </div>
               </div>
+              {formState.errors.price && (
+                <p className="text-red-500 ml-2">
+                  {formState.errors.price.message}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -228,30 +177,27 @@ export default function Calculator() {
             <label htmlFor="">Despesas Pedágio</label>
           </div>
           <div className="flex">
-            <Input
-              value={tollValue}
-              className="rounded-bl-md rounded-tl-md"
-              type="text"
-              onChange={(e) => setTollValue(formatToBRL(e.target.value))}
+            <Controller
+              name="toll"
+              control={control}
+              defaultValue={0}
+              render={({ field }) => {
+                return (
+                  <CurrencyInput
+                    value={field.value}
+                    onChangeValue={(_, value) => {
+                      field.onChange(value);
+                    }}
+                    InputElement={
+                      <Input
+                        className="rounded-bl-md rounded-tl-md"
+                        type="text"
+                      />
+                    }
+                  />
+                );
+              }}
             />
-            <button
-              onClick={handleAddToll}
-              className="flex items-center cursor-pointer px-6 justify-center bg-[#2563eb] h-14 border-input rounded-br-md rounded-tr-md"
-            >
-              <PlusIcon size={24} color="#fff" />
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2 my-2">
-            {toll
-              .map((data, idx) => (
-                <Badge
-                  key={idx}
-                  idx={idx}
-                  value={data}
-                  handleDelete={handleDeleteToll}
-                />
-              ))
-              .reverse()}
           </div>
         </div>
         <div className="flex flex-col w-full my-4">
@@ -259,28 +205,28 @@ export default function Calculator() {
             <label htmlFor="">Despesas Hospedagem</label>
           </div>
           <div className="flex">
-            <Input
-              value={hostingValue}
-              className="rounded-bl-md rounded-tl-md"
-              type="text"
-              onChange={(e) => setHostingValue(formatToBRL(e.target.value))}
+            <Controller
+              name="accomodation"
+              control={control}
+              defaultValue={0}
+              render={({ field }) => {
+                return (
+                  <CurrencyInput
+                    value={field.value}
+                    defaultValue={0}
+                    onChangeValue={(_, value) => {
+                      field.onChange(value);
+                    }}
+                    InputElement={
+                      <Input
+                        className="rounded-bl-md rounded-tl-md"
+                        type="text"
+                      />
+                    }
+                  />
+                );
+              }}
             />
-            <button
-              onClick={handleAddHosting}
-              className="flex items-center cursor-pointer px-6 justify-center bg-[#2563eb] h-14 border-input rounded-br-md rounded-tr-md"
-            >
-              <PlusIcon size={24} color="#fff" />
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2 my-2">
-            {hostings.map((data, idx) => (
-              <Badge
-                key={idx}
-                idx={idx}
-                value={data}
-                handleDelete={handleDeleteHosting}
-              />
-            ))}
           </div>
         </div>
         <div className="flex flex-col w-full my-4">
@@ -288,41 +234,37 @@ export default function Calculator() {
             <label htmlFor="">Despesas Alimentação</label>
           </div>
           <div className="flex">
-            <Input
-              value={foodValue}
-              className="rounded-bl-md rounded-tl-md"
-              type="text"
-              onChange={(e) => setFoodValue(formatToBRL(e.target.value))}
+            <Controller
+              name="food"
+              control={control}
+              defaultValue={0}
+              render={({ field }) => {
+                return (
+                  <CurrencyInput
+                    value={field.value}
+                    defaultValue={0}
+                    onChangeValue={(_, value) => {
+                      field.onChange(value);
+                    }}
+                    InputElement={
+                      <Input
+                        className="rounded-bl-md rounded-tl-md"
+                        type="text"
+                      />
+                    }
+                  />
+                );
+              }}
             />
-            <button
-              onClick={handleAddFoodExpense}
-              className="flex items-center cursor-pointer px-6 justify-center bg-[#2563eb] h-14 border-input rounded-br-md rounded-tr-md"
-            >
-              <PlusIcon size={24} color="#fff" />
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2 my-2">
-            {foods.map((data, idx) => (
-              <Badge
-                key={idx}
-                idx={idx}
-                value={data}
-                handleDelete={handleDeleteFoodExpense}
-              />
-            ))}
           </div>
         </div>
       </div>
       <div className="flex gap-2 my-8">
-        <Button variant={"ghost"} onClick={calculate} type="button">
+        <Button variant={"ghost"} onClick={handleSubmit(handleCalcule)}>
           Calcular Consumo
         </Button>
 
-        <Button
-          variant={"outline"}
-          className="bg-green-400"
-          onClick={handleSaveCalcule}
-        >
+        <Button variant={"outline"} className="bg-green-400" type="submit">
           Salvar
         </Button>
       </div>
@@ -334,22 +276,21 @@ export default function Calculator() {
         <div className="flex justify-between items-center">
           <div>
             <p className="text-lg font-semibold">
-              Custo Combustível:{" "}
-              {formatToBRL(String(totalData.getFuelExpensesCalcule * 100))}
+              Custo Combustível: {formatToBRL(totalData.getFuelExpensesCalcule)}
             </p>
             <p className="text-lg font-semibold">
               Custo Pedágio + Hospedagem + Alimentação:{" "}
-              {formatToBRL(String(totalData.getExpensesCalcule * 100))}
+              {formatToBRL(totalData.getExpensesCalcule)}
             </p>
           </div>
           <div className="flex flex-col items-end">
             <p className="text-3xl font-semibold ">Custo Total</p>
             <p className="text-4xl">
-              {formatToBRL(String(totalData.getTotalExpesesCalcule * 100))}
+              {formatToBRL(totalData.getTotalExpesesCalcule)}
             </p>
           </div>
         </div>
       </div>
-    </div>
+    </form>
   );
 }

@@ -28,23 +28,22 @@ export async function POST(request: Request) {
   
   const { id } = await getServerSession(nextAuthOptions);
   const res = await request.json();
-  const { distance, consume, price, toll, hostings, foods } = res;
-  console.log(distance, consume, price, toll, hostings, foods);
+  const { distance, consumption, price, toll, accomodation, food } = res;
   const calcule = new Calculate(
     distance,
-    consume,
+    consumption,
     price,
     toll,
-    hostings,
-    foods
+    accomodation,
+    food
   );
   await prisma.calculation.create({
     data: {
       userId: id,
       fuelExp: calcule.getFuelCalcule(),
       tollExp: toll,
-      accomodationExp: hostings,
-      foodExp: foods,
+      accomodationExp: accomodation,
+      foodExp: food,
       totalExpense: calcule.getTotalExpenses(),
     },
   });

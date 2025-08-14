@@ -1,29 +1,29 @@
 export class Calculate {
   toll: number;
-  hostings: number;
-  foods: number;
+  accomodation: number;
+  food: number;
 
   constructor(
     readonly distance: number,
-    readonly consume: number,
+    readonly consumption: number,
     readonly price: number,
     toll: number = 0,
-    hostings: number = 0,
-    foods: number = 0
+    accomodation: number = 0,
+    food: number = 0
   ) {
     this.toll = toll;
-    this.hostings = hostings;
-    this.foods = foods;
+    this.accomodation = accomodation;
+    this.food = food;
   }
 
   getFuelCalcule(): number {
-    const calcule = (this.distance / this.consume) * this.price;
+    const calcule = (this.distance / this.consumption) * this.price;
     if (!calcule) return 0;
     return Number.parseFloat(calcule.toFixed(2));
   }
 
   getExpensesCalcule() {
-    const calcule = this.toll + this.hostings + this.foods;
+    const calcule = this.toll + this.accomodation + this.food;
     if (!calcule) return 0;
     return Number.parseFloat(calcule.toFixed(2));
   }

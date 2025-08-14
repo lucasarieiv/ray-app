@@ -1,92 +1,94 @@
 "use client";
 import { signIn } from "next-auth/react";
 import { redirect } from "next/navigation";
-import { FormEvent, useState } from "react";
-import { z } from "zod";
-
-const LoginSchema = z.object({
-  email: z
-    .email({ message: "E-mail Inválido" })
-    .nonempty({ message: "Preecha o Campo" }),
-  password: z
-    .string()
-    .min(6, { message: "Senha deve conter mínimo de 6 Caracteres" })
-    .nonempty({ message: "Preencha o Campo" }),
-});
+import { Input } from "../ui/input";
+import { useForm } from "react-hook-form";
+import { Button } from "../ui/button";
+import { CalculatorIcon } from "lucide-react";
+import Link from "next/link";
+import {
+  NewLoginFormSchema,
+  newLoginFormSchema,
+} from "@/validators/login-validators";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export function SignInForm() {
-  const [userData, setUserData] = useState({
-    email: "",
-    password: "",
+  const form = useForm<NewLoginFormSchema>({
+    resolver: zodResolver(newLoginFormSchema),
   });
-  const [errors, setErrors] = useState({
-    email: "",
-    password: "",
-  });
-
-  async function handleCreateUser(e: FormEvent) {
-    e.preventDefault();
-    const register = LoginSchema.safeParse(userData);
-    if (register.error) {
-      const getErrors = z.treeifyError(register.error).properties;
-      setErrors({
-        email: getErrors?.email?.errors,
-        password: getErrors?.password?.errors,
-      });
-      return;
-    }
-
+  
+  async function onSubmit(data: NewLoginFormSchema) {
     const response = await signIn("credentials", {
-      email: userData.email,
-      password: userData.password,
-      redirect: false
+      email: data.email,
+      password: data.password,
+      redirect: false,
     });
     if (response?.error) {
       return;
     }
-    redirect('/calculator')
+    redirect("/calculator");
   }
 
   return (
-    <div>
-      <form onSubmit={handleCreateUser}>
+    <div className="w-full">
+      <div className="flex gap-4 items-center mb-8">
+        <CalculatorIcon size={32} color="#2563eb" />
+        <h1 className="text-4xl font-semibold text-[#2563eb]">
+          Bem-Vindo | <br />
+          Calculadora
+        </h1>
+      </div>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col gap-2"
+      >
         <div>
           <div>
             <label htmlFor="email">E-mail</label>
           </div>
-          <div>
-            <input
-              value={userData.email}
+          <div className="flex flex-col gap-0.5">
+            <Input
+              {...form.register("email")}
               name="email"
-              className="border-2"
+              className="rounded-md"
               type="text"
-              onChange={(e) =>
-                setUserData({ ...userData, email: e.target.value })
-              }
             />
+            {form.formState.errors.email && (
+              <p className="text-red-500 ml-2">
+                {form.formState.errors.email.message}
+              </p>
+            )}
           </div>
-          {errors?.email && <p className="text-red-500">{errors.email}</p>}
         </div>
         <div>
           <div>
             <label htmlFor="password">Senha</label>
           </div>
-          <div>
-            <input
-              value={userData.password}
+          <div className="flex flex-col gap-0.5">
+            <Input
+              {...form.register("password")}
               name="password"
-              className="border-2"
+              className="rounded-md"
               type="password"
-              onChange={(e) =>
-                setUserData({ ...userData, password: e.target.value })
-              }
             />
+            {form.formState.errors.password && (
+              <p className="text-red-500 ml-2">
+                {form.formState.errors.password.message}
+              </p>
+            )}
           </div>
-          {errors?.password && (
-            <p className="text-red-500">{errors.password}</p>
-          )}
         </div>
-        <button type="submit">Entrar</button>
+        <div className="text-right">
+          <p>
+            Não tem uma Conta?{" "}
+            <span className="font-semibold text-[#2563eb]">
+              <Link href={"/register"}>Criar Conta</Link>
+            </span>
+          </p>
+        </div>
+        <Button className="mt-8" type="submit">
+          Entrar
+        </Button>
       </form>
     </div>
   );

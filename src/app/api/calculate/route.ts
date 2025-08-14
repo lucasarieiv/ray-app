@@ -2,14 +2,14 @@ import { Calculate } from "@/entities/calculate";
 
 export async function POST(request: Request) {
   const res = await request.json();
-  const { distance, consume, price, toll, hostings, foods } = res;
+  const { distance, consumption, price, toll, accomodation, food } = res;
   const calcule = new Calculate(
     distance,
-    consume,
+    consumption,
     price,
     toll,
-    hostings,
-    foods
+    accomodation,
+    food
   );
   return Response.json({
     getFuelExpensesCalcule: calcule.getFuelCalcule(),
