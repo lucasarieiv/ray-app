@@ -11,13 +11,19 @@ export default async function DashboardLayout({
   if (!session) {
     redirect("/login");
   }
-  
+
   return (
-    <div className="flex flex-1 overflow-hidden">
-      <SideBar />
-      <section className="ml-[16rem] flex flex-col flex-1 overflow-y-auto">
-        <TopBar />
-        <div className="w-full p-8 md:gap-10 ">{children}</div>
+    <div className="">
+      <TopBar />
+      <section className="flex flex-1 overflow-y-auto">
+        <SideBar />
+        <div className="w-full overflow-x-auto">
+          <div className="sm:h-[calc(99vh-60px)] overflow-auto">
+            <div className="w-full flex justify-center mx-auto overflow-auto h-[calc(100vh -120px)] overflow-y-auto relative">
+              <div className="w-full p-8 md:max-6xl mt-6 ">{children}</div>
+            </div>
+          </div>
+        </div>
       </section>
     </div>
   );

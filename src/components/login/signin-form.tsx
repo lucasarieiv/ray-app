@@ -11,19 +11,26 @@ import {
   newLoginFormSchema,
 } from "@/validators/login-validators";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 
 export function SignInForm() {
   const form = useForm<NewLoginFormSchema>({
     resolver: zodResolver(newLoginFormSchema),
   });
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
+
   async function onSubmit(data: NewLoginFormSchema) {
+    setIsLoading(true);
+    setError(false);
     const response = await signIn("credentials", {
       email: data.email,
       password: data.password,
       redirect: false,
     });
     if (response?.error) {
+      setError(true);
+      setIsLoading(false);
       return;
     }
     redirect("/calculator");
@@ -78,6 +85,9 @@ export function SignInForm() {
             )}
           </div>
         </div>
+        <p className="text-red-500 ml-2">
+          {error && "Email ou senha inválidos"}
+        </p>
         <div className="text-right">
           <p>
             Não tem uma Conta?{" "}
@@ -87,7 +97,7 @@ export function SignInForm() {
           </p>
         </div>
         <Button className="mt-8" type="submit">
-          Entrar
+          {!isLoading ? "Entrar" : "Aguarde..."}
         </Button>
       </form>
     </div>

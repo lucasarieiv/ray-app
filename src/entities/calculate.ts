@@ -16,20 +16,20 @@ export class Calculate {
     this.food = food;
   }
 
-  getFuelCalcule(): number {
+  getTotalFuelExpense(): number {
     const calcule = (this.distance / this.consumption) * this.price;
     if (!calcule) return 0;
     return Number.parseFloat(calcule.toFixed(2));
   }
 
-  getExpensesCalcule() {
+  getTotalExpenses() {
     const calcule = this.toll + this.accomodation + this.food;
     if (!calcule) return 0;
     return Number.parseFloat(calcule.toFixed(2));
   }
 
-  getTotalExpenses() {
-    const calcule = this.getFuelCalcule() + this.getExpensesCalcule();
+  getTotal() {
+    const calcule = this.getTotalFuelExpense() + this.getTotalExpenses();
     if (!calcule) return 0;
     return Number.parseFloat(calcule.toFixed(2));
   }

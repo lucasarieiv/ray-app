@@ -38,7 +38,7 @@ const nextAuthOptions = {
       },
     }),
   ],
-  secret: "123123123123",
+  secret: "SECRET_KEY_91d84dc4-aecc-40d6-8e88-68d3ebc5eb10",
 };
 const handler = NextAuth(nextAuthOptions);
 export { handler as GET, handler as POST, nextAuthOptions };

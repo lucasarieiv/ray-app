@@ -12,8 +12,8 @@ export async function POST(request: Request) {
     food
   );
   return Response.json({
-    getFuelExpensesCalcule: calcule.getFuelCalcule(),
-    getExpensesCalcule: calcule.getExpensesCalcule(),
-    getTotalExpesesCalcule: calcule.getTotalExpenses(),
+    totalFuel: calcule.getTotalFuelExpense(),
+    totalExpenses: calcule.getTotalExpenses(),
+    total: calcule.getTotal(),
   });
 }

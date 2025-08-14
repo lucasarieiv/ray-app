@@ -20,15 +20,15 @@ import { CurrencyInput } from "react-currency-mask";
 import { Controller, useForm } from "react-hook-form";
 
 export default function Calculator() {
-  const { handleSubmit, control, formState, register, getValues } = useForm({
+  const { handleSubmit, control, formState, register, reset } = useForm({
     resolver: zodResolver(newCalculatorSchema),
   });
   const [totalData, setTotalData] = useState<CalculeResponse>({
-    getFuelExpensesCalcule: 0,
-    getExpensesCalcule: 0,
-    getTotalExpesesCalcule: 0,
+    totalFuel: 0,
+    totalExpenses: 0,
+    total: 0,
   });
-  console.log(getValues());
+  const [isLoading, setIsLoading] = useState(false);
 
   function formatToBRL(value: number) {
     return new Intl.NumberFormat("pt-BR", {
@@ -38,14 +38,20 @@ export default function Calculator() {
   }
 
   async function handleApiCall(url: string, data: NewCalculatorSchema) {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    const responseData: CalculeResponse = await response.json();
-    if (response.status == 200 || response.status == 201) {
-      setTotalData(responseData);
+    try {
+      setIsLoading(true);
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const responseData: CalculeResponse = await response.json();
+      if (response.status == 200 || response.status == 201) {
+        setTotalData(responseData);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
     }
   }
 
@@ -55,6 +61,7 @@ export default function Calculator() {
 
   async function handleSaveHistory(data: NewCalculatorSchema) {
     await handleApiCall("api/history", data);
+    reset();
   }
 
   return (
@@ -68,7 +75,7 @@ export default function Calculator() {
           <Fuel size={28} color="#2563eb" />
           <h1 className="text-2xl font-semibold my-4">Despesa Combustível</h1>
         </div>
-        <div className="flex justify-between gap-8">
+        <div className="flex flex-col md:flex-row justify-between gap-8">
           <div className="flex flex-col w-full">
             <div>
               <label htmlFor="distance">Distância</label>
@@ -81,7 +88,7 @@ export default function Calculator() {
                   className="rounded-bl-md rounded-tl-md"
                   type="text"
                 />
-                <div className="flex items-center px-6 justify-center bg-[#2563eb] h-14 border-input rounded-br-md rounded-tr-md">
+                <div className="flex items-center px-6 justify-center bg-[#2563eb] h-14 min-w-24 border-input rounded-br-md rounded-tr-md">
                   <p className="font-semibold text-white text-lg">km</p>
                 </div>
               </div>
@@ -158,18 +165,18 @@ export default function Calculator() {
         </div>
       </div>
       <div className="my-8">
-        <div className="flex gap-4">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row md:gap-4 my-4">
+          <div className="flex items-center gap-4 my-2">
             <Receipt size={28} color="#2563eb" />
-            <h1 className="text-2xl font-semibold my-4">Despesa Pedágios +</h1>
+            <h1 className="text-2xl font-semibold ">Despesa Pedágios +</h1>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 my-2">
             <Bed size={28} color="#2563eb" />
-            <h1 className="text-2xl font-semibold my-4">Hospedagem +</h1>
+            <h1 className="text-2xl font-semibold ">Hospedagem +</h1>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 my-2">
             <Hamburger size={28} color="#2563eb" />
-            <h1 className="text-2xl font-semibold my-4">Alimentação</h1>
+            <h1 className="text-2xl font-semibold ">Alimentação</h1>
           </div>
         </div>
         <div className="flex flex-col w-full my-4">
@@ -261,11 +268,14 @@ export default function Calculator() {
       </div>
       <div className="flex gap-2 my-8">
         <Button variant={"ghost"} onClick={handleSubmit(handleCalcule)}>
-          Calcular Consumo
+          {!isLoading ? "Calcular Consumo" : "Calculando..."}
         </Button>
-
-        <Button variant={"outline"} className="bg-green-400" type="submit">
-          Salvar
+        <Button
+          variant={"outline"}
+          className="bg-[#2563eb] px-8 text-white"
+          type="submit"
+        >
+          {!isLoading ? "Salvar Cálculo" : "Salvando..."}
         </Button>
       </div>
       <div className="flex items-center gap-4 mb-8">
@@ -273,21 +283,24 @@ export default function Calculator() {
         <h1 className="text-2xl font-semibold">Resultado</h1>
       </div>
       <div className="bg-blue-200 rounded-md p-8 pb-8">
-        <div className="flex justify-between items-center">
-          <div>
+        <div className="flex flex-col items-start md:flex-row md:justify-between">
+          <div className="py-4 border-b-[1px] border-blue-100 md:border-0">
             <p className="text-lg font-semibold">
-              Custo Combustível: {formatToBRL(totalData.getFuelExpensesCalcule)}
+              Custo Combustível:{" "}
+              <span className="font-bold">
+                {formatToBRL(totalData.totalFuel)}
+              </span>
             </p>
             <p className="text-lg font-semibold">
               Custo Pedágio + Hospedagem + Alimentação:{" "}
-              {formatToBRL(totalData.getExpensesCalcule)}
+              <span className="font-bold">
+                {formatToBRL(totalData.totalExpenses)}
+              </span>
             </p>
           </div>
-          <div className="flex flex-col items-end">
+          <div className="flex flex-col md:items-end my-2">
             <p className="text-3xl font-semibold ">Custo Total</p>
-            <p className="text-4xl">
-              {formatToBRL(totalData.getTotalExpesesCalcule)}
-            </p>
+            <p className="text-4xl">{formatToBRL(totalData.total)}</p>
           </div>
         </div>
       </div>

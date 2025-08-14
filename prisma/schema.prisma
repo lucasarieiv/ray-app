@@ -26,15 +26,19 @@ model User {
 }
 
 model Calculation {
-  id          Int      @id @default(autoincrement())
-  fuelExp Int
-  foodExp Int?
-  accomodationExp Int?
-  tollExp Int?
-  totalExpense Int
-  userId      String
-  User        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
+  id               Int      @id @default(autoincrement())
+  distance         Int
+  consumption      Int
+  price            Int
+  toll             Int?
+  accomodation     Int?
+  food             Int?
+  totalFuelExpense Int
+  totalExpenses    Int
+  totalCosts       Int
+  userId           String
+  User             User     @relation(fields: [userId], references: [id])
+  createdAt        DateTime @default(now())
 
   @@map("calculations")
 }

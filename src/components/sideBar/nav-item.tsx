@@ -1,5 +1,6 @@
 interface NavItemProps {
   icon: React.ReactNode;
+  expanded?: boolean;
   title: string;
   page?: string;
   activePath?: string;
@@ -10,7 +11,7 @@ function activeRouter(page: string, pathname: string) {
   if (!pathname) return;
   const router = pathname.replace("/", "");
   return (
-    router.startsWith(page) && "duration-300 linear bg-[#2563eb]  text-white"
+    router.startsWith(page) && ""
   );
 }
 
@@ -19,6 +20,7 @@ export default function NavItem({
   title,
   page,
   activePath,
+  expanded,
   onHandleClick,
 }: NavItemProps) {
   return (
@@ -29,13 +31,15 @@ export default function NavItem({
       }}
     >
       <div
-        className={`flex gap-[1rem] py-4 px-4 text-[1rem] items-center cursor-pointer rounded-2xl duration-300 linear hover:bg-[#f1f5f9] hover:text-[#2563eb] ${activeRouter(
+        className={`flex gap-[1rem] py-4 ${
+          expanded && "px-4"
+        } text-[1rem] items-center cursor-pointer rounded-2xl duration-300 linear  hover:text-[#2563eb] ${activeRouter(
           page,
           activePath
         )}`}
       >
         {icon}
-        <p className="text-left">{title}</p>
+        {expanded && <p className="text-left">{title}</p>}
       </div>
     </button>
   );

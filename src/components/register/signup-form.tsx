@@ -10,18 +10,22 @@ import { CalculatorIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
 
 export function SignUpForm() {
   const form = useForm<NewRegisterFormSchema>({
     resolver: zodResolver(newRegisterFormSchema),
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   async function onSubmit(data: NewRegisterFormSchema) {
+    setIsLoading(true)
     const response = await fetch("api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
+    setIsLoading(false)
     if (response.status === 201) {
       redirect('/login')
     }
@@ -121,7 +125,7 @@ export function SignUpForm() {
           </p>
         </div>
         <Button className="mt-8" type="submit">
-          Criar Conta
+          {!isLoading ? 'Criar Conta' : 'Aguarde...'}
         </Button>
       </form>
     </div>
